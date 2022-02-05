@@ -8,5 +8,6 @@ namespace MinewseeperCoop
     {
         public const int WIDTH = 1280;
         public const int HEIGHT = 720;
+        public const int LOG_SIZE = 15;
     }
 }

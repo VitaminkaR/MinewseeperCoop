@@ -13,8 +13,10 @@ namespace MinewseeperCoop
 
         public Map map;
         public Log baseLog;
+        internal Server server;
 
         public GameState gameState { get; internal set; }
+        public bool host { get; internal set; }
 
         SpriteFont font;
 
@@ -36,7 +38,10 @@ namespace MinewseeperCoop
             map.Generate(9, 9, 10);
 
             baseLog = new Log();
-            baseLog.Set("Logs:\n");
+            baseLog.Set("");
+
+            server = new Server();
+            server.StartServer();
 
             base.Initialize();
         }
@@ -52,7 +57,13 @@ namespace MinewseeperCoop
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+                server.Stop();
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                baseLog.Add(new System.Random().Next(0, 100).ToString());
 
             base.Update(gameTime);
         }
@@ -62,8 +73,10 @@ namespace MinewseeperCoop
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
             // log
+            int y = map.Field.GetLength(1) * 32 + 32;
             _spriteBatch.Begin();
-            _spriteBatch.DrawString(font, baseLog.Get(), new Vector2(0, map.Field.GetLength(1) * 32 + 32), Color.White);
+            _spriteBatch.DrawString(font, " Logs:\n", new Vector2(0, y), Color.White);
+            _spriteBatch.DrawString(font, baseLog.Get(), new Vector2(0, y + 32), Color.White);
             _spriteBatch.End();
 
             base.Draw(gameTime);
