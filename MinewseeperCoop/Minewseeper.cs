@@ -62,9 +62,6 @@ namespace MinewseeperCoop
                 server.Stop();
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter))
-                baseLog.Add(new System.Random().Next(0, 100).ToString());
-
             base.Update(gameTime);
         }
 
