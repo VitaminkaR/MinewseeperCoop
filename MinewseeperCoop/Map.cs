@@ -12,6 +12,7 @@ namespace MinewseeperCoop
         Random rand;
         SpriteBatch spriteBatch;
         bool isPress;
+        bool isPressR;
 
         Texture2D[] textures;
 
@@ -179,10 +180,10 @@ namespace MinewseeperCoop
         {
             MouseState ms = Mouse.GetState();
             if (ms.RightButton == ButtonState.Released)
-                isPress = false;
-            if (ms.RightButton == ButtonState.Pressed && !isPress)
+                isPressR = false;
+            if (ms.RightButton == ButtonState.Pressed && !isPressR)
             {
-                isPress = true;
+                isPressR = true;
                 int borderX = 32 * Field.GetLength(0);
                 int borderY = 32 * Field.GetLength(1);
                 int mX = ms.X;
