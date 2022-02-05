@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
+using System.Diagnostics;
 
 namespace MinewseeperCoop
 {
@@ -10,6 +11,7 @@ namespace MinewseeperCoop
     {
         Random rand;
         SpriteBatch spriteBatch;
+        bool isPress;
 
         Texture2D[] textures;
 
@@ -56,22 +58,168 @@ namespace MinewseeperCoop
 
             // генерация бомб
             int b = 0;
-            while(b < _b) 
+            while (b < _b)
             {
                 int w = rand.Next(0, _w);
                 int h = rand.Next(0, _h);
 
-                if(Field[w, h] != 10)
+                if (Field[w, h] != 10)
                 {
                     Field[w, h] = 10;
                     b++;
                 }
-            } 
+            }
         }
+
+
+
+        // фокус ячейки (когда наводишься она подсвечивается)
+        private Color Focus(int _w, int _h)
+        {
+            MouseState ms = Mouse.GetState();
+            int borderX = 32 * Field.GetLength(0);
+            int borderY = 32 * Field.GetLength(1);
+            int mX = ms.X;
+            int mY = ms.Y;
+            if (mX > 0 && mX < borderX && mY > 0 && mY < borderY)
+            {
+                int w = mX / 32;
+                int h = mY / 32;
+
+                if (w == _w && h == _h)
+                    return Color.Gray;
+            }
+            return Color.White;
+        }
+
+        // нажатие на ячейку (вызов открытия)
+        private void SetOpen()
+        {
+            MouseState ms = Mouse.GetState();
+            if (ms.LeftButton == ButtonState.Pressed && !isPress)
+            {
+                isPress = true;
+                int borderX = 32 * Field.GetLength(0);
+                int borderY = 32 * Field.GetLength(1);
+                int mX = ms.X;
+                int mY = ms.Y;
+                if (mX > 0 && mX < borderX && mY > 0 && mY < borderY)
+                {
+                    int w = mX / 32;
+                    int h = mY / 32;
+                    if (Field[w, h] == 9 || Field[w, h] == 10 && Field[w, h] != 12 && Field[w, h] != 13)
+                        Open(w, h);
+                }
+            }
+            if (ms.LeftButton == ButtonState.Released)
+                isPress = false;
+        }
+
+        // открытие клетки
+        private void Open(int w, int h)
+        {
+            Debug.WriteLine("OPEN");
+
+            if (Field[w, h] != 10)
+            {
+                int borderW = Field.GetLength(0);
+                int borderH = Field.GetLength(1);
+                int bombs = BombCount(w, h);
+                Field[w, h] = bombs;
+                if (bombs == 0)
+                {
+                    for (int i = w - 1; i <= w + 1; i++)
+                    {
+                        for (int j = h - 1; j <= h + 1; j++)
+                        {
+                            if (i != w || j != h)
+                            {
+                                if (i >= 0 && j >= 0 && i < borderW && j < borderH)
+                                {
+                                    if (Field[i, j] == 9)
+                                        Open(i, j);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(Field[w, h] == 10)
+            {
+                Field[w, h] = 11;
+            }
+        }
+
+        // подсчет бомб
+        private int BombCount(int w, int h)
+        {
+            int bombs = 0;
+            int borderW = Field.GetLength(0);
+            int borderH = Field.GetLength(1);
+            for (int i = w - 1; i <= w + 1; i++)
+            {
+                for (int j = h - 1; j <= h + 1; j++)
+                {
+                    if (i != w || j != h)
+                    {
+                        if (i >= 0 && j >= 0 && i < borderW && j < borderH)
+                        {
+                            if (Field[i, j] == 10 || Field[i, j] == 11)
+                                bombs++;
+                        }
+                    }
+                }
+            }
+            return bombs;
+        }
+
+        // поставить флажок
+        private void SetFlag()
+        {
+            MouseState ms = Mouse.GetState();
+            if (ms.RightButton == ButtonState.Released)
+                isPress = false;
+            if (ms.RightButton == ButtonState.Pressed && !isPress)
+            {
+                isPress = true;
+                int borderX = 32 * Field.GetLength(0);
+                int borderY = 32 * Field.GetLength(1);
+                int mX = ms.X;
+                int mY = ms.Y;
+                if (mX > 0 && mX < borderX && mY > 0 && mY < borderY)
+                {
+                    int w = mX / 32;
+                    int h = mY / 32;
+                    if (Field[w, h] == 12)
+                    {
+                        Field[w, h] = 9;
+                        return;
+                    }
+                    if (Field[w, h] == 13)
+                    {
+                        Field[w, h] = 10;
+                        return;
+                    } 
+                    if (Field[w, h] == 9)
+                    {
+                        Field[w, h] = 12;
+                        return;
+                    } 
+                    if (Field[w, h] == 10)
+                    {
+                        Field[w, h] = 13;
+                        return;
+                    }
+                }
+            }
+        }
+
 
         public override void Update(GameTime gameTime)
         {
-
+            SetOpen();
+            SetFlag();
 
             base.Update(gameTime);
         }
@@ -83,6 +231,7 @@ namespace MinewseeperCoop
                 for (int h = 0; h < Field.GetLength(1); h++)
                 {
                     Texture2D sprite = new Texture2D(GraphicsDevice, 32, 32);
+                    Color color = Focus(w, h);
 
                     // выбор спрайта от id
                     if (Field[w, h] == 9 || Field[w, h] == 10)
@@ -111,7 +260,7 @@ namespace MinewseeperCoop
                         sprite = textures[11];
 
                     spriteBatch.Begin();
-                    spriteBatch.Draw(sprite, new Vector2(w * 32, h * 32), Color.White);
+                    spriteBatch.Draw(sprite, new Vector2(w * 32, h * 32), color);
                     spriteBatch.End();
                 }
             }
