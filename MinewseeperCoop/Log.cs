@@ -22,14 +22,8 @@
             }
             else
             {
-                logSize = 0;
-                string[] logs = log.Split('\n');
                 Remove();
-                for (int i = 1; i < logs.Length - 1; i++)
-                {
-                    log += logs[i] + '\n';
-                }
-                Add(info);
+                logSize = 0;
             }
         }
 

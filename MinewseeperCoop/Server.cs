@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace MinewseeperCoop
 {
@@ -43,7 +44,7 @@ namespace MinewseeperCoop
             try
             {
                 server.Start();
-                server.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), null);
+                server.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), server);
                 IsClose = false;
 
                 serverLoop = new Thread(new ThreadStart(ServerLoop));
@@ -64,14 +65,18 @@ namespace MinewseeperCoop
             server.Server.Close();
             server.Server.Dispose();
             IsClose = true;
+
+            Minewseeper.minewseeper.baseLog.Add("SERVER:STOP");
         }
 
         private void AcceptClient(IAsyncResult result)
         {
             try
             {
-                clients.Add(server.EndAcceptTcpClient(result).GetStream());
+                TcpListener _server = (TcpListener)result.AsyncState;
+                clients.Add(_server.EndAcceptTcpClient(result).GetStream());
                 Minewseeper.minewseeper.baseLog.Add("SERVER:ACCEPT_CLIENT");
+                server.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), server);
             }
             catch
             {
@@ -91,20 +96,39 @@ namespace MinewseeperCoop
                     while (clients[i].DataAvailable)
                     {
                         byte[] bytes = new byte[PacketSize];
-                        Minewseeper.minewseeper.baseLog.Add("SERVER:RECEIVE");
-                        SendPacket(bytes);
-                        Minewseeper.minewseeper.baseLog.Add("SERVER:SEND");
+                        clients[i].Read(bytes, 0, bytes.Length);
+
+                        // проверка присоединился ли пользователь
+                        string msg = Encoding.UTF8.GetString(bytes);
+                        if ((msg[0] + msg[1]) == 218)
+                        {
+                            clients[i].Write(bytes, 0, bytes.Length);
+                        }
+                        else
+                        {
+                            Minewseeper.minewseeper.baseLog.Add("SERVER:RECEIVE");
+                            SendPacket(bytes, i);
+                        }
                     }
                 }
-                Thread.Sleep(1);
+                if (!IsClose)
+                    Thread.Sleep(1);
             }
         }
 
-        private void SendPacket(byte[] packet)
+        private void SendPacket(byte[] packet, int id)
         {
-            for (int i = 0; i < clients.Count; i++)
+            try
             {
-                clients[i].Write(packet, 0, packet.Length);
+                for (int i = 0; i < clients.Count; i++)
+                {
+                    if (i != id)
+                        clients[i].Write(packet, 0, packet.Length);
+                }
+            }
+            catch
+            {
+                Minewseeper.minewseeper.baseLog.Add("SERVER:SEND:ERROR");
             }
         }
     }

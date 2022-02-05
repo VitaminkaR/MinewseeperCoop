@@ -14,6 +14,7 @@ namespace MinewseeperCoop
         public Map map;
         public Log baseLog;
         internal Server server;
+        internal Client client;
 
         public GameState gameState { get; internal set; }
         public bool host { get; internal set; }
@@ -34,6 +35,11 @@ namespace MinewseeperCoop
 
         protected override void Initialize()
         {
+            Exiting += (object sender, System.EventArgs e) => {
+                server.Stop();
+                client.Disconnect();
+            };
+
             map = new Map(this);
             map.Generate(9, 9, 10);
 
@@ -42,6 +48,8 @@ namespace MinewseeperCoop
 
             server = new Server();
             server.StartServer();
+            client = new Client();
+            client.Connect();
 
             base.Initialize();
         }
@@ -56,11 +64,8 @@ namespace MinewseeperCoop
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))           
                 Exit();
-                server.Stop();
-            }
 
             base.Update(gameTime);
         }
