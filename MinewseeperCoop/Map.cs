@@ -17,6 +17,9 @@ namespace MinewseeperCoop
         Texture2D[] textures;
 
         public int[,] Field { get; private set; }
+        private int sizeW;
+        private int sizeH;
+        private int bombsCount;
 
         public Map(Game game) : base(game)
         {
@@ -48,6 +51,9 @@ namespace MinewseeperCoop
         public void Generate(int _w, int _h, int _b)
         {
             Field = new int[_w, _h];
+            sizeW = _w;
+            sizeH = _h;
+            bombsCount = _b;
 
             for (int w = 0; w < _w; w++)
             {
@@ -78,8 +84,8 @@ namespace MinewseeperCoop
         private Color Focus(int _w, int _h)
         {
             MouseState ms = Mouse.GetState();
-            int borderX = 32 * Field.GetLength(0);
-            int borderY = 32 * Field.GetLength(1);
+            int borderX = 32 * sizeW;
+            int borderY = 32 * sizeH;
             int mX = ms.X;
             int mY = ms.Y;
             if (mX > 0 && mX < borderX && mY > 0 && mY < borderY)
@@ -100,8 +106,8 @@ namespace MinewseeperCoop
             if (ms.LeftButton == ButtonState.Pressed && !isPress)
             {
                 isPress = true;
-                int borderX = 32 * Field.GetLength(0);
-                int borderY = 32 * Field.GetLength(1);
+                int borderX = 32 * sizeW;
+                int borderY = 32 * sizeH;
                 int mX = ms.X;
                 int mY = ms.Y;
                 if (mX > 0 && mX < borderX && mY > 0 && mY < borderY)
@@ -119,12 +125,10 @@ namespace MinewseeperCoop
         // открытие клетки
         private void Open(int w, int h)
         {
-            Debug.WriteLine("OPEN");
-
             if (Field[w, h] != 10)
             {
-                int borderW = Field.GetLength(0);
-                int borderH = Field.GetLength(1);
+                int borderW = sizeW;
+                int borderH = sizeH;
                 int bombs = BombCount(w, h);
                 Field[w, h] = bombs;
                 if (bombs == 0)
@@ -149,6 +153,7 @@ namespace MinewseeperCoop
             if(Field[w, h] == 10)
             {
                 Field[w, h] = 11;
+                Lose();
             }
         }
 
@@ -156,8 +161,8 @@ namespace MinewseeperCoop
         private int BombCount(int w, int h)
         {
             int bombs = 0;
-            int borderW = Field.GetLength(0);
-            int borderH = Field.GetLength(1);
+            int borderW = sizeW;
+            int borderH = sizeH;
             for (int i = w - 1; i <= w + 1; i++)
             {
                 for (int j = h - 1; j <= h + 1; j++)
@@ -166,7 +171,7 @@ namespace MinewseeperCoop
                     {
                         if (i >= 0 && j >= 0 && i < borderW && j < borderH)
                         {
-                            if (Field[i, j] == 10 || Field[i, j] == 11)
+                            if (Field[i, j] == 10 || Field[i, j] == 11 || Field[i, j] == 13)
                                 bombs++;
                         }
                     }
@@ -184,8 +189,8 @@ namespace MinewseeperCoop
             if (ms.RightButton == ButtonState.Pressed && !isPressR)
             {
                 isPressR = true;
-                int borderX = 32 * Field.GetLength(0);
-                int borderY = 32 * Field.GetLength(1);
+                int borderX = 32 * sizeW;
+                int borderY = 32 * sizeH;
                 int mX = ms.X;
                 int mY = ms.Y;
                 if (mX > 0 && mX < borderX && mY > 0 && mY < borderY)
@@ -217,22 +222,64 @@ namespace MinewseeperCoop
         }
 
 
+
+        // проигрыш
+        private void Lose() => Minewseeper.minewseeper.gameState = GameState.lose;
+
+        // выйгрыш
+        private void CheckWin()
+        {
+            int cells = 0;
+            for (int w = 0; w < sizeW; w++)
+            {
+                for (int h = 0; h < sizeH; h++)
+                {
+                    if (Field[w, h] != 9 && Field[w, h] != 10 && Minewseeper.minewseeper.gameState != GameState.lose)
+                        cells += 1;
+                }
+            }
+            if (cells == sizeH * sizeW)
+                Minewseeper.minewseeper.gameState = GameState.win;
+        }
+
+        // рестарт
+        private void Restart()
+        {
+            Minewseeper.minewseeper.gameState = GameState.game;
+            Generate(sizeW, sizeH, bombsCount);
+        }
+
+
+
         public override void Update(GameTime gameTime)
         {
             SetOpen();
             SetFlag();
+            CheckWin();
+
+            KeyboardState ks = Keyboard.GetState();
+            if (ks.IsKeyDown(Keys.R))
+                Restart();
 
             base.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime)
         {
-            for (int w = 0; w < Field.GetLength(0); w++)
+            for (int w = 0; w < sizeW; w++)
             {
-                for (int h = 0; h < Field.GetLength(1); h++)
+                for (int h = 0; h < sizeH; h++)
                 {
                     Texture2D sprite = new Texture2D(GraphicsDevice, 32, 32);
-                    Color color = Focus(w, h);
+
+                    Color color = Color.White;
+                    if (Minewseeper.minewseeper.gameState == GameState.game)
+                        color = Focus(w, h);
+                    else if (Minewseeper.minewseeper.gameState == GameState.lose)
+                        color = Color.Red;
+                    else
+                        color = Color.LightGreen;
+
 
                     // выбор спрайта от id
                     if (Field[w, h] == 9 || Field[w, h] == 10)

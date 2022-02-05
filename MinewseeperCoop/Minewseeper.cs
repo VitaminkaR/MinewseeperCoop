@@ -9,9 +9,15 @@ namespace MinewseeperCoop
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        internal Minewseeper minewseeper;
+        static internal Minewseeper minewseeper;
 
         public Map map;
+        public Log baseLog;
+
+        public GameState gameState { get; internal set; }
+
+        SpriteFont font;
+
 
         public Minewseeper()
         {
@@ -29,6 +35,8 @@ namespace MinewseeperCoop
             map = new Map(this);
             map.Generate(9, 9, 10);
 
+            baseLog = new Log();
+            baseLog.Set("Logs:\n");
 
             base.Initialize();
         }
@@ -38,6 +46,7 @@ namespace MinewseeperCoop
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             map.ContentLoad(Content);
+            font = Content.Load<SpriteFont>("font");
         }
 
         protected override void Update(GameTime gameTime)
@@ -52,7 +61,10 @@ namespace MinewseeperCoop
         {
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
-
+            // log
+            _spriteBatch.Begin();
+            _spriteBatch.DrawString(font, baseLog.Get(), new Vector2(0, map.Field.GetLength(1) * 32 + 32), Color.White);
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
