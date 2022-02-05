@@ -114,6 +114,8 @@ namespace MinewseeperCoop
                 {
                     int w = mX / 32;
                     int h = mY / 32;
+                    if (Field[w, h] != 9 && Field[w, h] != 10 && Field[w, h] != 11 && Field[w, h] != 12 && Field[w, h] != 13)
+                        Copilot(w, h);
                     if (Field[w, h] == 9 || Field[w, h] == 10 && Field[w, h] != 12 && Field[w, h] != 13)
                         Open(w, h);
                 }
@@ -127,8 +129,6 @@ namespace MinewseeperCoop
         {
             if (Field[w, h] != 10)
             {
-                int borderW = sizeW;
-                int borderH = sizeH;
                 int bombs = BombCount(w, h);
                 Field[w, h] = bombs;
                 if (bombs == 0)
@@ -139,7 +139,7 @@ namespace MinewseeperCoop
                         {
                             if (i != w || j != h)
                             {
-                                if (i >= 0 && j >= 0 && i < borderW && j < borderH)
+                                if (i >= 0 && j >= 0 && i < sizeW && j < sizeH)
                                 {
                                     if (Field[i, j] == 9)
                                         Open(i, j);
@@ -150,7 +150,7 @@ namespace MinewseeperCoop
                 }
             }
 
-            if(Field[w, h] == 10)
+            if (Field[w, h] == 10)
             {
                 Field[w, h] = 11;
                 Lose();
@@ -161,15 +161,13 @@ namespace MinewseeperCoop
         private int BombCount(int w, int h)
         {
             int bombs = 0;
-            int borderW = sizeW;
-            int borderH = sizeH;
             for (int i = w - 1; i <= w + 1; i++)
             {
                 for (int j = h - 1; j <= h + 1; j++)
                 {
                     if (i != w || j != h)
                     {
-                        if (i >= 0 && j >= 0 && i < borderW && j < borderH)
+                        if (i >= 0 && j >= 0 && i < sizeW && j < sizeH)
                         {
                             if (Field[i, j] == 10 || Field[i, j] == 11 || Field[i, j] == 13)
                                 bombs++;
@@ -206,16 +204,51 @@ namespace MinewseeperCoop
                     {
                         Field[w, h] = 10;
                         return;
-                    } 
+                    }
                     if (Field[w, h] == 9)
                     {
                         Field[w, h] = 12;
                         return;
-                    } 
+                    }
                     if (Field[w, h] == 10)
                     {
                         Field[w, h] = 13;
                         return;
+                    }
+                }
+            }
+        }
+
+        // помощь игроку (октрытие клеток автоматически)
+        private void Copilot(int w, int h)
+        {
+            int bombs = BombCount(w, h);
+            int flags = 0;
+            for (int i = w - 1; i <= w + 1; i++)
+            {
+                for (int j = h - 1; j <= h + 1; j++)
+                {
+                    if (i >= 0 && j >= 0 && i < sizeW && j < sizeH)
+                    {
+                        if (Field[i, j] == 12 || Field[i, j] == 13)
+                            flags++;
+                    }
+                }
+            }
+
+            if (flags > bombs)
+                Lose();
+            if(flags == bombs)
+            {
+                for (int i = w - 1; i <= w + 1; i++)
+                {
+                    for (int j = h - 1; j <= h + 1; j++)
+                    {
+                        if (i >= 0 && j >= 0 && i < sizeW && j < sizeH)
+                        {
+                            if (Field[i, j] == 9)
+                                Open(i, j);
+                        }
                     }
                 }
             }
