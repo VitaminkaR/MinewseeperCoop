@@ -49,7 +49,7 @@ namespace MinewseeperCoop
         }
 
         // генерация поля
-        public void Generate(int _w, int _h, int _b)
+        public void Generate(int _w, int _h, int _b, bool send = true)
         {
             Field = new int[_w, _h];
             sizeW = _w;
@@ -79,7 +79,8 @@ namespace MinewseeperCoop
                         b++;
                     }
                 }
-                SendFMap();
+                if(send)
+                    SendFMap();
             }
         }
 
@@ -272,7 +273,7 @@ namespace MinewseeperCoop
             {
                 for (int h = 0; h < sizeH; h++)
                 {
-                    if (Field[w, h] != 9 && Field[w, h] != 10 && Minewseeper.minewseeper.gameState != GameState.lose)
+                    if (Field[w, h] != 10 && Minewseeper.minewseeper.gameState != GameState.lose)
                         cells += 1;
                 }
             }
@@ -281,7 +282,7 @@ namespace MinewseeperCoop
         }
 
         // рестарт
-        private void Restart()
+        public void Restart()
         {
             Minewseeper.minewseeper.gameState = GameState.game;
             Generate(sizeW, sizeH, bombsCount);
@@ -322,7 +323,7 @@ namespace MinewseeperCoop
             string msg = "smap=" + JsonSerializer.Serialize(sizeW.ToString() + ':' + sizeH.ToString(), typeof(string));
             Minewseeper.minewseeper.server?.Send(msg);
 
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(100);
 
             SendMap();
         }
@@ -336,8 +337,6 @@ namespace MinewseeperCoop
             CheckWin();
 
             KeyboardState ks = Keyboard.GetState();
-            if (ks.IsKeyDown(Keys.R))
-                Restart();
 
             base.Update(gameTime);
         }

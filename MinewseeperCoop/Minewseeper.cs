@@ -21,6 +21,8 @@ namespace MinewseeperCoop
         Button startServerButton;
         Texture2D connectButtonTexture;
         Button connectButton;
+        Texture2D restartButtonTexture;
+        Button restartButton;
 
         public GameState gameState { get; internal set; }
         public bool Host { get; internal set; }
@@ -67,8 +69,11 @@ namespace MinewseeperCoop
             startServerButton = new Button(this, 400, 0, startServerButtonTexture);
             startServerButton.Click += () => StartServer();
             connectButtonTexture = Content.Load<Texture2D>("connect");
-            connectButton = new Button(this, 400, 64 + 16, connectButtonTexture);
+            connectButton = new Button(this, 400, 64, connectButtonTexture);
             connectButton.Click += () => Connect();
+            restartButtonTexture = Content.Load<Texture2D>("restart");
+            restartButton = new Button(this, 400, 64 * 2 + 16, restartButtonTexture);
+            restartButton.Click += () => map.Restart();
         }
 
         protected override void Update(GameTime gameTime)
@@ -102,7 +107,7 @@ namespace MinewseeperCoop
             
             if (Host)
             {
-                map.Generate(9, 9, 10);
+                map.Generate(9, 9, 10, false);
                 server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendFMap();
             }
         }
