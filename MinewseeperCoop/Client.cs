@@ -132,7 +132,22 @@ namespace MinewseeperCoop
             {
                 string str = (string)JsonSerializer.Deserialize(data[1], typeof(string));
                 string[] s = str.Split(':');
+                Minewseeper.minewseeper.gameState = GameState.game;
                 Minewseeper.minewseeper.map.Generate(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), 10, false);
+            }
+
+            if(data[0] == "open")
+            {
+                string str = (string)JsonSerializer.Deserialize(data[1], typeof(string));
+                string[] s = str.Split(':');
+                Minewseeper.minewseeper.map.Open(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]));
+            }
+
+            if(data[0] == "value")
+            {
+                string str = (string)JsonSerializer.Deserialize(data[1], typeof(string));
+                string[] s = str.Split(':');
+                Minewseeper.minewseeper.map.Field[Convert.ToInt32(s[0]), Convert.ToInt32(s[1])] = Convert.ToInt32(s[2]);
             }
         }
     }

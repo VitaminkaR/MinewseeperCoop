@@ -123,7 +123,10 @@ namespace MinewseeperCoop
                     if (Field[w, h] != 9 && Field[w, h] != 10 && Field[w, h] != 11 && Field[w, h] != 12 && Field[w, h] != 13)
                         Copilot(w, h);
                     if (Field[w, h] == 9 || Field[w, h] == 10 && Field[w, h] != 12 && Field[w, h] != 13)
+                    {
                         Open(w, h);
+                        SendOpen(w, h);
+                    }  
                 }
             }
             if (ms.LeftButton == ButtonState.Released)
@@ -131,7 +134,7 @@ namespace MinewseeperCoop
         }
 
         // открытие клетки
-        private void Open(int w, int h)
+        internal void Open(int w, int h)
         {
             if (Field[w, h] != 10)
             {
@@ -204,21 +207,25 @@ namespace MinewseeperCoop
                     if (Field[w, h] == 12)
                     {
                         Field[w, h] = 9;
+                        SendValue(w, h, 9);
                         return;
                     }
                     if (Field[w, h] == 13)
                     {
                         Field[w, h] = 10;
+                        SendValue(w, h, 10);
                         return;
                     }
                     if (Field[w, h] == 9)
                     {
                         Field[w, h] = 12;
+                        SendValue(w, h, 12);
                         return;
                     }
                     if (Field[w, h] == 10)
                     {
                         Field[w, h] = 13;
+                        SendValue(w, h, 13);
                         return;
                     }
                 }
@@ -253,7 +260,10 @@ namespace MinewseeperCoop
                         if (i >= 0 && j >= 0 && i < sizeW && j < sizeH)
                         {
                             if (Field[i, j] == 9)
+                            {
                                 Open(i, j);
+                                SendOpen(i, j);
+                            }
                         }
                     }
                 }
@@ -326,6 +336,20 @@ namespace MinewseeperCoop
             System.Threading.Thread.Sleep(100);
 
             SendMap();
+        }
+
+        // отправляет от клиента открытие клетки
+        private void SendOpen(int w, int h)
+        {
+            string msg = "open=" + JsonSerializer.Serialize(w.ToString() + ':' + h.ToString(), typeof(string));
+            Minewseeper.minewseeper.client?.Send(msg);
+        }
+
+        // отправляет установку флага или установку какого либо значения ячейкт
+        private void SendValue(int w, int h, int value)
+        {
+            string msg = "value=" + JsonSerializer.Serialize(w.ToString() + ':' + h.ToString() + ':' + value.ToString(), typeof(string));
+            Minewseeper.minewseeper.client?.Send(msg);
         }
 
 
