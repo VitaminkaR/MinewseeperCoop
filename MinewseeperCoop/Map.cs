@@ -289,6 +289,8 @@ namespace MinewseeperCoop
             }
             if (cells == sizeH * sizeW)
                 Minewseeper.minewseeper.gameState = GameState.win;
+            else if (Minewseeper.minewseeper.gameState != GameState.lose)
+                Minewseeper.minewseeper.gameState = GameState.game;
         }
 
         // рестарт
