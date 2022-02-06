@@ -139,28 +139,31 @@ namespace MinewseeperCoop
 
         public void Send(string msg, NetworkStream stream = null)
         {
-            try
+            if (stream == null)
             {
-                if (stream == null)
+                for (int i = 0; i < clients.Count; i++)
                 {
-                    for (int i = 0; i < clients.Count; i++)
+                    try
                     {
                         byte[] bytes = new byte[PacketSize];
                         bytes = Encoding.UTF8.GetBytes(msg);
                         clients[i].Write(bytes, 0, bytes.Length);
+
+                        Minewseeper.minewseeper.baseLog.Add("SERVER:SEND");
+                    }
+                    catch
+                    {
+                        Minewseeper.minewseeper.baseLog.Add("SERVER:SEND:ERROR");
+
+                        clients.Remove(clients[i]);
                     }
                 }
-                else
-                {
-                    byte[] bytes = new byte[PacketSize];
-                    bytes = Encoding.UTF8.GetBytes(msg);
-                    stream.Write(bytes, 0, bytes.Length);
-                }
-                Minewseeper.minewseeper.baseLog.Add("SERVER:SEND");
             }
-            catch
+            else
             {
-                Minewseeper.minewseeper.baseLog.Add("SERVER:SEND:ERROR");
+                byte[] bytes = new byte[PacketSize];
+                bytes = Encoding.UTF8.GetBytes(msg);
+                stream.Write(bytes, 0, bytes.Length);
             }
         }
     }
