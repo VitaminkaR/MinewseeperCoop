@@ -102,8 +102,8 @@ namespace MinewseeperCoop
             
             if (Host)
             {
-                server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendMap();
                 map.Generate(9, 9, 10);
+                server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendFMap();
             }
         }
 

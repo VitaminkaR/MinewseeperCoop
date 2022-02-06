@@ -79,7 +79,7 @@ namespace MinewseeperCoop
                         b++;
                     }
                 }
-                SendMap();
+                SendFMap();
             }
         }
 
@@ -314,6 +314,17 @@ namespace MinewseeperCoop
 
             string msg = "map=" + JsonSerializer.Serialize(bombsPos, typeof(string[]));
             Minewseeper.minewseeper.server?.Send(msg);
+        }
+
+        // отправляет пользователям размер поля
+        public void SendFMap()
+        {
+            string msg = "smap=" + JsonSerializer.Serialize(sizeW.ToString() + ':' + sizeH.ToString(), typeof(string));
+            Minewseeper.minewseeper.server?.Send(msg);
+
+            System.Threading.Thread.Sleep(500);
+
+            SendMap();
         }
 
 

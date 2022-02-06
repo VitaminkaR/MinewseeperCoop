@@ -96,7 +96,7 @@ namespace MinewseeperCoop
             int count = 0;
             for (int i = 0; i < bytes.Length; i++)
             {
-                if(bytes[i] != 0)
+                if (bytes[i] != 0)
                     count++;
             }
 
@@ -115,17 +115,33 @@ namespace MinewseeperCoop
         // обработка всех сообщений из сети
         private void HandleData(string msg)
         {
-            string[] data = msg.Split('=');
-            if(data[0] == "map")
+            try
             {
-                string[] str = (string[])JsonSerializer.Deserialize(data[1], typeof(string[]));
-                for (int i = 0; i < str.Length; i++)
+                string[] data = msg.Split('=');
+                if (data[0] == "map")
                 {
-                    string[] s = str[i].Split(':');
-                    int w = Convert.ToInt32(s[0]);
-                    int h = Convert.ToInt32(s[1]);
-                    Minewseeper.minewseeper.map.Field[w, h] = 10;
+                    string[] str = (string[])JsonSerializer.Deserialize(data[1], typeof(string[]));
+                    for (int i = 0; i < str.Length; i++)
+                    {
+                        string[] s = str[i].Split(':');
+                        int w = Convert.ToInt32(s[0]);
+                        int h = Convert.ToInt32(s[1]);
+                        Minewseeper.minewseeper.map.Field[w, h] = 10;
+                    }
                 }
+
+                if (data[0] == "smap")
+                {
+                    string str = (string)JsonSerializer.Deserialize(data[1], typeof(string));
+                    string[] s = str.Split(':');
+                    Minewseeper.minewseeper.map.Generate(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), 10);
+                }
+
+                Minewseeper.minewseeper.baseLog.Add("CLIENT:HANDLE:SUCC");
+            }
+            catch
+            {
+                Minewseeper.minewseeper.baseLog.Add("CLIENT:HANDLE:ERROR");
             }
         }
     }
