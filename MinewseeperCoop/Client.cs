@@ -1,8 +1,9 @@
-﻿using System;
+﻿using System.Text.Json;
 using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System;
 
 namespace MinewseeperCoop
 {
@@ -64,9 +65,11 @@ namespace MinewseeperCoop
 
                     Minewseeper.minewseeper.baseLog.Add("CLIENT:RECEIVE");
 
-                    string msg = Encoding.UTF8.GetString(bytes);
-                    if ((msg[0] + msg[1]) == 218)
+                    string msg = Encoding.UTF8.GetString(ByteBit(bytes));
+                    if (msg == "ok")
                         Minewseeper.minewseeper.baseLog.Add("CLIENT:CONNECTED");
+                    else
+                        HandleData(msg);
                 }
                 Thread.Sleep(1);
             }
@@ -85,6 +88,44 @@ namespace MinewseeperCoop
             catch
             {
                 Minewseeper.minewseeper.baseLog.Add("CLIENT:SEND:ERROR");
+            }
+        }
+
+        public byte[] ByteBit(byte[] bytes)
+        {
+            int count = 0;
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if(bytes[i] != 0)
+                    count++;
+            }
+
+            byte[] _bytes = new byte[count];
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if (bytes[i] != 0)
+                    _bytes[i] = bytes[i];
+            }
+
+            return _bytes;
+        }
+
+
+
+        // обработка всех сообщений из сети
+        private void HandleData(string msg)
+        {
+            string[] data = msg.Split('=');
+            if(data[0] == "map")
+            {
+                string[] str = (string[])JsonSerializer.Deserialize(data[1], typeof(string[]));
+                for (int i = 0; i < str.Length; i++)
+                {
+                    string[] s = str[i].Split(':');
+                    int w = Convert.ToInt32(s[0]);
+                    int h = Convert.ToInt32(s[1]);
+                    Minewseeper.minewseeper.map.Field[w, h] = 10;
+                }
             }
         }
     }

@@ -17,7 +17,7 @@ namespace MinewseeperCoop
         internal Client client;
 
         public GameState gameState { get; internal set; }
-        public bool host { get; internal set; }
+        public bool Host { get; internal set; } = true;
 
         SpriteFont font;
 
@@ -48,8 +48,16 @@ namespace MinewseeperCoop
 
             server = new Server();
             server.StartServer();
+
+            if (Host)
+            {
+                server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendMap();
+            }
+
             client = new Client();
             client.Connect();
+
+            
 
             base.Initialize();
         }

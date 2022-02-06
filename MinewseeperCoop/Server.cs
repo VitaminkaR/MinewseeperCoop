@@ -15,6 +15,8 @@ namespace MinewseeperCoop
         private int port;
         private List<NetworkStream> clients;
         private Thread serverLoop;
+        public delegate void NewClientConnected(NetworkStream stream);
+        public event NewClientConnected NewClientConnectedEvent;
 
         public bool IsClose { get; private set; }
         public int PacketSize { get; private set; } = 1024;
@@ -30,7 +32,6 @@ namespace MinewseeperCoop
                 server = new TcpListener(endPoint);
                 clients = new List<NetworkStream>();
 
-                Minewseeper.minewseeper.host = true;
                 Minewseeper.minewseeper.baseLog.Add("SERVER:CREATE");
             }
             catch
@@ -76,6 +77,7 @@ namespace MinewseeperCoop
                 TcpListener _server = (TcpListener)result.AsyncState;
                 clients.Add(_server.EndAcceptTcpClient(result).GetStream());
                 Minewseeper.minewseeper.baseLog.Add("SERVER:ACCEPT_CLIENT");
+                NewClientConnectedEvent?.Invoke(clients[clients.Count - 1]);
                 server.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), server);
             }
             catch
@@ -95,6 +97,7 @@ namespace MinewseeperCoop
                 {
                     while (clients[i].DataAvailable)
                     {
+                        Minewseeper.minewseeper.baseLog.Add("SERVER:RECEIVE");
                         byte[] bytes = new byte[PacketSize];
                         clients[i].Read(bytes, 0, bytes.Length);
 
@@ -106,7 +109,6 @@ namespace MinewseeperCoop
                         }
                         else
                         {
-                            Minewseeper.minewseeper.baseLog.Add("SERVER:RECEIVE");
                             SendPacket(bytes, i);
                         }
                     }
@@ -125,6 +127,33 @@ namespace MinewseeperCoop
                     if (i != id)
                         clients[i].Write(packet, 0, packet.Length);
                 }
+            }
+            catch
+            {
+                Minewseeper.minewseeper.baseLog.Add("SERVER:SEND:ERROR");
+            }
+        }
+
+        public void Send(string msg, NetworkStream stream = null)
+        {
+            try
+            {
+                if (stream == null)
+                {
+                    for (int i = 0; i < clients.Count; i++)
+                    {
+                        byte[] bytes = new byte[PacketSize];
+                        bytes = Encoding.UTF8.GetBytes(msg);
+                        clients[i].Write(bytes, 0, bytes.Length);
+                    }
+                }
+                else
+                {
+                    byte[] bytes = new byte[PacketSize];
+                    bytes = Encoding.UTF8.GetBytes(msg);
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+                Minewseeper.minewseeper.baseLog.Add("SERVER:SEND");
             }
             catch
             {

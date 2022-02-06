@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace MinewseeperCoop
 {
@@ -63,18 +64,22 @@ namespace MinewseeperCoop
                 }
             }
 
-            // генерация бомб
-            int b = 0;
-            while (b < _b)
+            if (Minewseeper.minewseeper.Host)
             {
-                int w = rand.Next(0, _w);
-                int h = rand.Next(0, _h);
-
-                if (Field[w, h] != 10)
+                // генерация бомб
+                int b = 0;
+                while (b < _b)
                 {
-                    Field[w, h] = 10;
-                    b++;
+                    int w = rand.Next(0, _w);
+                    int h = rand.Next(0, _h);
+
+                    if (Field[w, h] != 10)
+                    {
+                        Field[w, h] = 10;
+                        b++;
+                    }
                 }
+                SendMap();
             }
         }
 
@@ -238,7 +243,7 @@ namespace MinewseeperCoop
 
             if (flags > bombs)
                 Lose();
-            if(flags == bombs)
+            if (flags == bombs)
             {
                 for (int i = w - 1; i <= w + 1; i++)
                 {
@@ -280,6 +285,35 @@ namespace MinewseeperCoop
         {
             Minewseeper.minewseeper.gameState = GameState.game;
             Generate(sizeW, sizeH, bombsCount);
+        }
+
+
+
+        // отправляет пользователям карту (для оптимизации достаточно оптравить лишь позиции бомб)
+        public void SendMap()
+        {
+            string[] bombsPos = new string[bombsCount];
+
+            for (int w = 0; w < sizeW; w++)
+            {
+                for (int h = 0; h < sizeH; h++)
+                {
+                    if (Field[w, h] == 10)
+                    {
+                        for (int i = 0; i < bombsCount; i++)
+                        {
+                            if (bombsPos[i] == null || bombsPos[i] == "")
+                            {
+                                bombsPos[i] = w.ToString() + ':' + h.ToString();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            string msg = "map=" + JsonSerializer.Serialize(bombsPos, typeof(string[]));
+            Minewseeper.minewseeper.server?.Send(msg);
         }
 
 
