@@ -23,7 +23,7 @@ namespace MinewseeperCoop
         Button connectButton;
 
         public GameState gameState { get; internal set; }
-        public bool Host { get; internal set; } = true;
+        public bool Host { get; internal set; }
 
         SpriteFont font;
 
@@ -61,10 +61,14 @@ namespace MinewseeperCoop
 
             map.ContentLoad(Content);
             font = Content.Load<SpriteFont>("font");
+
+            //ui
             startServerButtonTexture = Content.Load<Texture2D>("start server");
             startServerButton = new Button(this, 400, 0, startServerButtonTexture);
+            startServerButton.Click += () => StartServer();
             connectButtonTexture = Content.Load<Texture2D>("connect");
             connectButton = new Button(this, 400, 64 + 16, connectButtonTexture);
+            connectButton.Click += () => Connect();
         }
 
         protected override void Update(GameTime gameTime)
@@ -99,11 +103,17 @@ namespace MinewseeperCoop
             if (Host)
             {
                 server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendMap();
+                map.Generate(9, 9, 10);
             }
         }
 
         private void Connect()
         {
+            if (!Host)
+            {
+                map.Generate(9, 9, 10);
+            }
+
             client = new Client();
             client.Connect();
         }

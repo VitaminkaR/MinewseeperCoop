@@ -12,6 +12,10 @@ namespace MinewseeperCoop
         private SpriteBatch spriteBatch;
 
         private bool focus;
+        private bool press;
+
+        public delegate void ClickD();
+        public event ClickD Click;
 
         public Button(Game game, int x, int y, Texture2D texture) : base(game)
         {
@@ -31,13 +35,21 @@ namespace MinewseeperCoop
             else
                 focus = false;
 
+            if (focus && ms.LeftButton == ButtonState.Pressed && !press)
+            {
+                press = true;
+                Click?.Invoke();
+            }
+            if (ms.LeftButton == ButtonState.Released)
+                press = false;
+
             base.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime)
         {
             Color color = Color.White;
-            if (focus)
+            if (focus && !press)
                 color = Color.Gray;
 
             spriteBatch.Begin();
