@@ -40,7 +40,7 @@ namespace MinewseeperCoop
             }
         }
 
-        public void StartServer()
+        public bool StartServer()
         {
             try
             {
@@ -52,10 +52,13 @@ namespace MinewseeperCoop
                 serverLoop.Start();
 
                 Minewseeper.minewseeper.baseLog.Add("SERVER:START");
+
+                return true;
             }
             catch
             {
                 Minewseeper.minewseeper.baseLog.Add("SERVER:START:ERROR");
+                return false;
             }
         }
 
@@ -77,7 +80,6 @@ namespace MinewseeperCoop
                 TcpListener _server = (TcpListener)result.AsyncState;
                 clients.Add(_server.EndAcceptTcpClient(result).GetStream());
                 Minewseeper.minewseeper.baseLog.Add("SERVER:ACCEPT_CLIENT");
-                NewClientConnectedEvent?.Invoke(clients[clients.Count - 1]);
                 server.BeginAcceptTcpClient(new AsyncCallback(AcceptClient), server);
             }
             catch
@@ -106,6 +108,7 @@ namespace MinewseeperCoop
                         if ((msg[0] + msg[1]) == 218)
                         {
                             clients[i].Write(bytes, 0, bytes.Length);
+                            NewClientConnectedEvent?.Invoke(clients[clients.Count - 1]);
                         }
                         else
                         {

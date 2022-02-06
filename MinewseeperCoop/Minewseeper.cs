@@ -16,6 +16,12 @@ namespace MinewseeperCoop
         internal Server server;
         internal Client client;
 
+        //ui
+        Texture2D startServerButtonTexture;
+        Button startServerButton;
+        Texture2D connectButtonTexture;
+        Button connectButton;
+
         public GameState gameState { get; internal set; }
         public bool Host { get; internal set; } = true;
 
@@ -36,8 +42,8 @@ namespace MinewseeperCoop
         protected override void Initialize()
         {
             Exiting += (object sender, System.EventArgs e) => {
-                server.Stop();
-                client.Disconnect();
+                server?.Stop();
+                client?.Disconnect();
             };
 
             map = new Map(this);
@@ -45,19 +51,6 @@ namespace MinewseeperCoop
 
             baseLog = new Log();
             baseLog.Set("");
-
-            server = new Server();
-            server.StartServer();
-
-            if (Host)
-            {
-                server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendMap();
-            }
-
-            client = new Client();
-            client.Connect();
-
-            
 
             base.Initialize();
         }
@@ -68,6 +61,10 @@ namespace MinewseeperCoop
 
             map.ContentLoad(Content);
             font = Content.Load<SpriteFont>("font");
+            startServerButtonTexture = Content.Load<Texture2D>("start server");
+            startServerButton = new Button(this, 400, 0, startServerButtonTexture);
+            connectButtonTexture = Content.Load<Texture2D>("connect");
+            connectButton = new Button(this, 400, 64 + 16, connectButtonTexture);
         }
 
         protected override void Update(GameTime gameTime)
@@ -90,6 +87,25 @@ namespace MinewseeperCoop
             _spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+
+
+        private void StartServer()
+        {
+            server = new Server();
+            Host = server.StartServer();
+            
+            if (Host)
+            {
+                server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendMap();
+            }
+        }
+
+        private void Connect()
+        {
+            client = new Client();
+            client.Connect();
         }
     }
 }
