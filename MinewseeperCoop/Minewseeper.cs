@@ -23,6 +23,8 @@ namespace MinewseeperCoop
         Button connectButton;
         Texture2D restartButtonTexture;
         Button restartButton;
+        Texture2D textInputTexture;
+        TextInput ipInput;
 
         public GameState gameState { get; internal set; }
         public bool Host { get; internal set; }
@@ -74,6 +76,9 @@ namespace MinewseeperCoop
             restartButtonTexture = Content.Load<Texture2D>("restart");
             restartButton = new Button(this, 400, 64 * 2 + 16, restartButtonTexture);
             restartButton.Click += () => map.Restart();
+
+            textInputTexture = Content.Load<Texture2D>("input");
+            ipInput = new TextInput(this, 400 + 256, 0, textInputTexture, font);
         }
 
         protected override void Update(GameTime gameTime)
@@ -102,7 +107,7 @@ namespace MinewseeperCoop
 
         private void StartServer()
         {
-            server = new Server();
+            server = new Server(ipInput.text);
             Host = server.StartServer();
             
             if (Host)
@@ -120,7 +125,7 @@ namespace MinewseeperCoop
             }
 
             client = new Client();
-            client.Connect();
+            client.Connect(ipInput.text);
         }
     }
 }
