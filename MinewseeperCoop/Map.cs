@@ -283,11 +283,11 @@ namespace MinewseeperCoop
             {
                 for (int h = 0; h < sizeH; h++)
                 {
-                    if (Field[w, h] != 10 && Minewseeper.minewseeper.gameState != GameState.lose)
+                    if (Field[w, h] != 10 && Field[w, h] != 9 && Field[w, h] != 13 && Minewseeper.minewseeper.gameState != GameState.lose)
                         cells += 1;
                 }
             }
-            if (cells == sizeH * sizeW)
+            if (cells == (sizeH * sizeW) - bombsCount)
                 Minewseeper.minewseeper.gameState = GameState.win;
             else if (Minewseeper.minewseeper.gameState != GameState.lose)
                 Minewseeper.minewseeper.gameState = GameState.game;
@@ -352,7 +352,7 @@ namespace MinewseeperCoop
         {
             string msg = "value=" + JsonSerializer.Serialize(w.ToString() + ':' + h.ToString() + ':' + value.ToString(), typeof(string));
             Minewseeper.minewseeper.client?.Send(msg);
-        }
+        } 
 
 
 

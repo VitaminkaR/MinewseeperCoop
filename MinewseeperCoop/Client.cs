@@ -121,7 +121,7 @@ namespace MinewseeperCoop
                 if (fragments[f] != "")
                 {
                     string[] data = fragments[f].Split('=');
-                    if (data[0] == "map")
+                    if (data[0] == "map" && !Minewseeper.minewseeper.Host)
                     {
                         string[] str = (string[])JsonSerializer.Deserialize(data[1], typeof(string[]));
                         for (int i = 0; i < str.Length; i++)
@@ -133,7 +133,7 @@ namespace MinewseeperCoop
                         }
                     }
 
-                    if (data[0] == "smap")
+                    if (data[0] == "smap" && !Minewseeper.minewseeper.Host)
                     {
                         string str = (string)JsonSerializer.Deserialize(data[1], typeof(string));
                         string[] s = str.Split(':');
@@ -154,8 +154,28 @@ namespace MinewseeperCoop
                         string[] s = str.Split(':');
                         Minewseeper.minewseeper.map.Field[Convert.ToInt32(s[0]), Convert.ToInt32(s[1])] = Convert.ToInt32(s[2]);
                     }
+
+                    if (Minewseeper.minewseeper.Host)
+                    {
+                        if(data[0] == "restart")
+                        {
+                            Minewseeper.minewseeper.map.Restart();
+                        }
+                    }
                 }
             }
+        }
+
+
+
+        // отправляет запрос на рестарт
+        public void SendRestart()
+        {
+            string msg = "restart=";
+            if (Minewseeper.minewseeper.Host)
+                Minewseeper.minewseeper.map.Restart();
+            else
+                Send(msg);
         }
     }
 }

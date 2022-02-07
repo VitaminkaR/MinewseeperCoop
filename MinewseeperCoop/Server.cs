@@ -146,7 +146,7 @@ namespace MinewseeperCoop
                     try
                     {
                         byte[] bytes = new byte[PacketSize];
-                        bytes = Encoding.UTF8.GetBytes(msg);
+                        bytes = Encoding.UTF8.GetBytes(msg + '\n');
                         clients[i].Write(bytes, 0, bytes.Length);
 
                         Minewseeper.minewseeper.baseLog.Add("SERVER:SEND");
@@ -162,7 +162,7 @@ namespace MinewseeperCoop
             else
             {
                 byte[] bytes = new byte[PacketSize];
-                bytes = Encoding.UTF8.GetBytes(msg);
+                bytes = Encoding.UTF8.GetBytes(msg + '\n');
                 stream.Write(bytes, 0, bytes.Length);
             }
         }

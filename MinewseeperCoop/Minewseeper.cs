@@ -51,7 +51,7 @@ namespace MinewseeperCoop
             };
 
             map = new Map(this);
-            map.Generate(9, 9, 10);
+            map.Generate(12, 12, 10);
 
             baseLog = new Log();
             baseLog.Set("");
@@ -75,7 +75,7 @@ namespace MinewseeperCoop
             connectButton.Click += () => Connect();
             restartButtonTexture = Content.Load<Texture2D>("restart");
             restartButton = new Button(this, 400, 64 * 2 + 16, restartButtonTexture);
-            restartButton.Click += () => map.Restart();
+            restartButton.Click += () => client.SendRestart();
 
             textInputTexture = Content.Load<Texture2D>("input");
             ipInput = new TextInput(this, 400 + 256, 0, textInputTexture, font);
@@ -107,12 +107,15 @@ namespace MinewseeperCoop
 
         private void StartServer()
         {
-            server = new Server(ipInput.text);
+            if(ipInput.text != null)
+                server = new Server(ipInput.text);
+            else
+                server = new Server();
             Host = server.StartServer();
             
             if (Host)
             {
-                map.Generate(9, 9, 10, false);
+                map.Generate(12, 12, 10, false);
                 server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendFMap();
             }
         }
@@ -125,7 +128,10 @@ namespace MinewseeperCoop
             }
 
             client = new Client();
-            client.Connect(ipInput.text);
+            if (ipInput.text != null)
+                client.Connect(ipInput.text);
+            else
+                client.Connect();
         }
     }
 }
