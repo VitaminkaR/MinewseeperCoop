@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Threading;
 
 namespace MinewseeperCoop
 {
@@ -11,12 +12,14 @@ namespace MinewseeperCoop
         private Texture2D texture;
         private SpriteBatch spriteBatch;
         private SpriteFont font;
+        private Timer writeInterval;
 
         private bool focus;
         private bool input;
         private bool press;
         public string text;
         public bool pressK;
+        private bool isWrite = true;
 
         public TextInput(Game game, int x, int y, Texture2D texture, SpriteFont font) : base(game)
         {
@@ -55,9 +58,13 @@ namespace MinewseeperCoop
             KeyboardState ks = Keyboard.GetState();
             if (input)
             {
-                if(ks.GetPressedKeys().Length > 0 && !ks.IsKeyDown(Keys.LeftControl))
+                if(ks.GetPressedKeys().Length > 0 && !ks.IsKeyDown(Keys.LeftControl) && isWrite)
                 {
-                    text += ks.GetPressedKeys()[0].ToString();
+                    Keys key = ks.GetPressedKeys()[0];
+                    text = KeyParse.Get(key);
+
+                    isWrite = false;
+                    writeInterval = new Timer(new TimerCallback((obj) => { isWrite = true; writeInterval.Dispose(); }), null, 100, 0);
                 }
                     
                 if (ks.IsKeyDown(Keys.Back))
