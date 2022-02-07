@@ -297,7 +297,7 @@ namespace MinewseeperCoop
         public void Restart()
         {
             Minewseeper.minewseeper.gameState = GameState.game;
-            Generate(sizeW, sizeH, bombsCount);
+            Generate(Convert.ToInt32(Minewseeper.minewseeper.sizeInput.text), Convert.ToInt32(Minewseeper.minewseeper.sizeInput.text), Convert.ToInt32(Minewseeper.minewseeper.bombsInput.text));
         }
 
 

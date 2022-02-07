@@ -61,14 +61,14 @@ namespace MinewseeperCoop
                 if(ks.GetPressedKeys().Length > 0 && !ks.IsKeyDown(Keys.LeftControl) && isWrite)
                 {
                     Keys key = ks.GetPressedKeys()[0];
-                    text = KeyParse.Get(key);
+                    text += KeyParse.Get(key);
 
                     isWrite = false;
-                    writeInterval = new Timer(new TimerCallback((obj) => { isWrite = true; writeInterval.Dispose(); }), null, 100, 0);
+                    writeInterval = new Timer(new TimerCallback((obj) => { isWrite = true; writeInterval.Dispose(); }), null, 150, 0);
                 }
-                    
+
                 if (ks.IsKeyDown(Keys.Back))
-                    text = "";
+                    Backspace();
 
                 if(ks.IsKeyDown(Keys.LeftControl) && ks.IsKeyDown(Keys.V) && !pressK)
                 {
@@ -97,6 +97,20 @@ namespace MinewseeperCoop
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void Backspace()
+        {
+            string value = "";
+
+            if (text.Length > 0)
+            {
+                for (int i = 0; i < text.Length - 1; i++)
+                {
+                    value += text[i];
+                }
+            }
+            text = value;
         }
     }
 }

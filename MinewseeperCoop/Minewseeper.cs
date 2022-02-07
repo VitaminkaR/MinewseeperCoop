@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace MinewseeperCoop
 {
@@ -25,6 +26,8 @@ namespace MinewseeperCoop
         Button restartButton;
         Texture2D textInputTexture;
         TextInput ipInput;
+        internal TextInput sizeInput;
+        internal TextInput bombsInput;
 
         public GameState gameState { get; internal set; }
         public bool Host { get; internal set; }
@@ -79,6 +82,8 @@ namespace MinewseeperCoop
 
             textInputTexture = Content.Load<Texture2D>("input");
             ipInput = new TextInput(this, 400 + 256, 0, textInputTexture, font);
+            sizeInput = new TextInput(this, 400 + 256, 64, textInputTexture, font);
+            bombsInput = new TextInput(this, 400 + 256, 128, textInputTexture, font);
         }
 
         protected override void Update(GameTime gameTime)
@@ -115,7 +120,7 @@ namespace MinewseeperCoop
             
             if (Host)
             {
-                map.Generate(12, 12, 10, false);
+                map.Generate(Convert.ToInt32(sizeInput.text), Convert.ToInt32(sizeInput.text), Convert.ToInt32(bombsInput.text), false);
                 server.NewClientConnectedEvent += (System.Net.Sockets.NetworkStream stream) => map.SendFMap();
             }
         }
